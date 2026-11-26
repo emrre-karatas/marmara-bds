@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="./manifest.json">
+    <title>BDS Hesaplayıcı (10-29 Kişi)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000; 
+            color: #d1d5db;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background-color: #0a0a0a; 
+            width: 100%;
+            max-width: 900px;
+            padding: 15px 35px; 
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            max-height: 98vh; 
+        }
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px; 
+            border-bottom: 1px solid #1f1f1f;
+            padding-bottom: 10px; 
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background-color: #111113;
+            border: 1px solid #27272a;
+            color: #a1a1aa;
+            text-decoration: none;
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            color: #ffffff;
+            border-color: #3f3f46;
+            background-color: #18181b;
+        }
+        h2 { margin: 0; color: #f8fafc; font-weight: 500; font-size: 22px; letter-spacing: 0.5px; } 
+        
+        /* Dinamik Sınıf Düzeyi Rozeti */
+        .level-container {
+            display: flex;
+            align-items: center;
+        }
+        .level-label {
+            color: #e2e8f0;
+            font-size: 15px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+        .class-level-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13.5px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+        }
+        .level-green { color: #4ade80; border: 1px solid #4ade8055; background-color: #4ade8015; }
+        .level-blue { color: #38bdf8; border: 1px solid #38bdf855; background-color: #38bdf815; }
+        .level-orange { color: #fb923c; border: 1px solid #fb923c55; background-color: #fb923c15; }
+        .level-red { color: #f87171; border: 1px solid #f8717155; background-color: #f8717115; }
+
+        /* Tablo Tasarımı */
+        .table-container { 
+            flex-grow: 1; 
+            margin-bottom: 15px; 
+            overflow: hidden;
+            background-color: #000000; 
+            border-radius: 8px;
+            border: 1px solid #1f1f1f;
+        }
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            text-align: left; 
+            font-size: 14.5px;
+        }
+        th { 
+            padding: 8px 14px; 
+            border-bottom: 1px solid #1f1f1f; 
+            background-color: #0a0a0a;
+        }
+        th span {
+            background-color: #29241b; 
+            color: #e5c07b; 
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: normal;
+            font-size: 13px;
+        }
+        td { 
+            padding: 8px 14px; 
+            border-bottom: 1px solid #111111; 
+            color: #ffffff;
+        }
+        tr:last-child td { border-bottom: none; }
+        tr.stripe-gray td { background-color: #1a1a1e; }
+        tr:hover td { background-color: #222226; }
+        tr.active-row td { 
+            background-color: #2962ff !important; 
+            color: #ffffff;
+            font-weight: 600; 
+            border-bottom: 1px solid #2962ff; 
+        }
+        
+        /* Sonuçlar (Orta Kısım) */
+        .results-container {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            padding: 12px 0; 
+            margin-bottom: 12px; 
+            background-color: #000000;
+            border-radius: 10px;
+            border: 1px solid #1f1f1f;
+        }
+        .result-box { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 6px; 
+            width: 30%;
+        }
+        .result-label { color: #8b8b93; font-size: 13px;}
+        
+        .result-value { 
+            font-size: 20px; 
+            font-weight: 600; 
+            color: #ffffff;
+            background-color: #0a0a0a; 
+            border: 1px solid #1f1f1f;
+            padding: 6px 12px; 
+            border-radius: 8px;
+            min-width: 115px;
+            white-space: nowrap;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; 
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .rounding-indicator {
+            position: absolute;
+            left: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+        .round-up { color: #4ade80; }
+        .round-down { color: #f87171; }
+
+        /* Baraj / BDKL Kırmızı Çerçeve ve Hover Uyarı Balonu */
+        .baraj-error {
+            border-color: #f87171 !important;
+            box-shadow: 0 0 10px rgba(248, 113, 113, 0.28) !important;
+        }
+        .baraj-tooltip {
+            display: none;
+            position: absolute;
+            bottom: calc(100% + 9px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #111113;
+            color: #fca5a5;
+            border: 1px solid #f8717170;
+            padding: 6px 10px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            z-index: 200;
+            pointer-events: none;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.85);
+        }
+        .baraj-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: #f8717170;
+        }
+        .baraj-error:hover .baraj-tooltip,
+        .input-tooltip-wrap.has-error:hover .baraj-tooltip {
+            display: block;
+        }
+        .input-tooltip-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+        .input-tooltip-wrap .baraj-tooltip {
+            left: auto;
+            right: 0;
+            transform: none;
+        }
+        .input-tooltip-wrap .baraj-tooltip::after {
+            left: auto;
+            right: 32px;
+            transform: none;
+        }
+        
+        /* Kontroller (3 Satır: 2+2 ve Ortalanmış 3. Satır) */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 40px; 
+            padding: 0 10px;
+        }
+        .control-group { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+        }
+        .control-group-center {
+            grid-column: 1 / -1;
+            width: calc(50% - 20px);
+            justify-self: center;
+        }
+        .control-group label { 
+            width: 124px; 
+            color: #a1a1aa; 
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .control-group input[type=range] { 
+            flex-grow: 1; 
+            margin: 0 15px; 
+            cursor: pointer;
+            -webkit-appearance: none;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 5px; background: #3f3f46; border-radius: 3px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 18px; width: 18px;
+            border-radius: 50%; background: #d4d4d8; margin-top: -6.5px;
+        }
+        .control-group input.num-box {
+            width: 75px; 
+            background: #000000; 
+            border: 1px solid #3f3f46; 
+            color: white; 
+            padding: 6px; 
+            border-radius: 6px; 
+            text-align: center; 
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+        .control-group input.num-box:focus { border-color: #2962ff; }
+
+        /* Mobil Uyum (Masaüstü görünümüne dokunmaz) */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+                align-items: flex-start;
+                padding: 8px;
+            }
+            .container {
+                max-height: none;
+                padding: 14px 12px;
+            }
+            .header-row {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            h2 { font-size: 17px; }
+            .level-container { width: 100%; justify-content: space-between; }
+            .level-label { font-size: 13.5px; }
+            .class-level-badge { font-size: 12.5px; padding: 5px 12px; }
+            table { font-size: 13px; }
+            th, td { padding: 8px 8px; }
+            th span { font-size: 11.5px; padding: 3px 7px; }
+            .results-container { padding: 10px 6px; gap: 6px; }
+            .result-box { width: 32%; }
+            .result-label { font-size: 11.5px; }
+            .result-value { min-width: 0; width: 100%; font-size: 18px; padding: 6px 8px; }
+            .rounding-indicator { left: 6px; font-size: 11.5px; }
+            #boxBasariNotu .baraj-tooltip { left: 0; transform: none; }
+            #boxBasariNotu .baraj-tooltip::after { left: 26px; transform: none; }
+            #boxSira .baraj-tooltip { white-space: normal; width: 210px; text-align: center; }
+            .controls { grid-template-columns: 1fr; gap: 12px; padding: 0 2px; }
+            .control-group-center { width: 100%; justify-self: stretch; }
+            .control-group label { width: 116px; font-size: 13px; }
+            .control-group input[type=range] { margin: 0 10px; }
+            .control-group input.num-box { width: 66px; font-size: 14px; padding: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-row">
+        <div class="header-left">
+            <a class="back-btn" href="./index.html" title="Ana Menü">←</a>
+            <h2>BDS Hesaplayıcı (10-29 Kişi)</h2>
+        </div>
+        <div class="level-container">
+            <span class="level-label">Sınıfın Düzeyi:</span>
+            <div id="classLevelDisplay" class="class-level-badge level-green">MÜKEMMEL</div>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table id="gradesTable">
+            <thead>
+                <tr>
+                    <th><span>Harf Notu</span></th>
+                    <th><span>Yüzde</span></th>
+                    <th><span>Sıra Aralığı</span></th>
+                    <th><span>Durum</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JavaScript ile Doldurulacak -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="results-container">
+        <div class="result-box">
+            <span class="result-label">Başarı Notu</span>
+            <div class="result-value" id="boxBasariNotu">
+                <span id="valRounding" class="rounding-indicator" style="visibility: hidden;"></span>
+                <span id="valBasariNotu">0</span>
+                <span class="baraj-tooltip">Başarı notu 40'ın altında.</span>
+            </div>
+        </div>
+        <div class="result-box">
+            <span class="result-label">Sıralama</span>
+            <div class="result-value" id="boxSira">
+                <span id="valSira">0 / 0</span>
+                <span class="baraj-tooltip">Başarı notu 25'in altında olduğu için T-skoru hesabı yapılmaz.</span>
+            </div>
+        </div>
+        <div class="result-box">
+            <span class="result-label">Harf Notu</span>
+            <div class="result-value" id="valHarfNotu">-</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <!-- Satır 1 -->
+        <div class="control-group">
+            <label>Vize Notu</label>
+            <input type="range" id="vizeSlider" min="0" max="100" step="1" value="82">
+            <input type="text" inputmode="numeric" class="num-box" id="vizeInput" min="0" max="100" step="1" value="82">
+        </div>
+        <div class="control-group">
+            <label>Final Notu</label>
+            <input type="range" id="finalSlider" min="0" max="100" step="1" value="87">
+            <span class="input-tooltip-wrap" id="finalInputWrap">
+                <input type="text" inputmode="numeric" class="num-box" id="finalInput" min="0" max="100" step="1" value="87">
+                <span class="baraj-tooltip">Final notu 40'ın altında.</span>
+            </span>
+        </div>
+
+        <!-- Satır 2 -->
+        <div class="control-group">
+            <label>Sınıf Ortalaması</label>
+            <input type="range" id="ortSlider" min="0" max="100" step="0.01" value="83.63">
+            <input type="text" inputmode="decimal" class="num-box" id="ortInput" min="0" max="100" step="0.01" value="83.63">
+        </div>
+        <div class="control-group">
+            <label>Sınıf Mevcudu</label>
+            <input type="range" id="mevcutSlider" min="10" max="29" step="1" value="19">
+            <input type="text" inputmode="numeric" class="num-box" id="mevcutInput" min="10" max="29" step="1" value="19">
+        </div>
+
+        <!-- Satır 3 (Ortalanmış) -->
+        <div class="control-group control-group-center">
+            <label>Başarı Sıralaması</label>
+            <input type="range" id="siraSlider" min="1" max="19" step="1" value="11">
+            <input type="text" inputmode="numeric" class="num-box" id="siraInput" min="1" max="19" step="1" value="11">
+        </div>
+    </div>
+</div>
+
+<script>
+    const YSSL_BARAJI = 40;
+    const BNAL_BARAJI = 40;
+    const BDKL_BARAJI = 25;
+
+    const durumIsimleri = {
+        "AA": "Mükemmel", 
+        "BA": "Çok İyi", 
+        "BB": "İyi",
+        "CB": "Ortanın Üstü", 
+        "CC": "Orta", 
+        "DC": "Koşullu Geçer",
+        "DD": "Koşullu Geçer", 
+        "FD": "Başarısız", 
+        "FF": "Başarısız"
+    };
+    const harfIsimleri = ['AA', 'BA', 'BB', 'CB', 'CC', 'DC', 'DD', 'FD', 'FF'];
+
+    const TABLE_4 = [
+        { name: "MÜKEMMEL", colorClass: "level-green", p: [24.0, 15.2, 22.8, 11.6, 17.4, 4.8, 3.2, 0.2, 0.8] },
+        { name: "PEKİYİ", colorClass: "level-blue", p: [18.0, 14.4, 21.6, 12.8, 19.2, 7.2, 4.8, 0.4, 1.6] },
+        { name: "İYİ", colorClass: "level-blue", p: [14.0, 12.8, 19.2, 14.4, 21.6, 9.0, 6.0, 0.6, 2.4] },
+        { name: "ORTANIN ÜSTÜ", colorClass: "level-orange", p: [10.0, 11.6, 17.4, 14.8, 22.2, 12.0, 8.0, 0.8, 3.2] },
+        { name: "ORTA", colorClass: "level-orange", p: [7.0, 9.6, 14.4, 15.2, 22.8, 14.4, 9.6, 1.4, 5.6] },
+        { name: "ZAYIF", colorClass: "level-red", p: [4.0, 8.0, 12.0, 14.8, 22.2, 17.4, 11.6, 2.0, 8.0] },
+        { name: "KÖTÜ", colorClass: "level-red", p: [3.0, 6.0, 9.0, 14.4, 21.6, 19.2, 12.8, 2.8, 11.2] }
+    ];
+
+    function getTable4Level(avg) {
+        if (avg > 70.00) return TABLE_4[0];
+        if (avg > 62.50) return TABLE_4[1];
+        if (avg > 57.50) return TABLE_4[2];
+        if (avg > 52.50) return TABLE_4[3];
+        if (avg > 47.50) return TABLE_4[4];
+        if (avg > 42.50) return TABLE_4[5];
+        return TABLE_4[6];
+    }
+
+    function calculateQuotas(levelObj, N) {
+        let quotas = levelObj.p.map(q => Math.round((q * N) / 100));
+        let quotaSum = quotas.reduce((a, b) => a + b, 0);
+        let diff = N - quotaSum;
+        if (diff > 0) {
+            let i = 0;
+            while (diff > 0) {
+                quotas[i]++;
+                diff--;
+                i = (i + 1) % quotas.length;
+            }
+        } else if (diff < 0) {
+            let i = quotas.length - 1;
+            while (diff < 0) {
+                if (quotas[i] > 0) {
+                    quotas[i]--;
+                    diff++;
+                }
+                i--;
+                if (i < 0) i = quotas.length - 1;
+            }
+        }
+        return quotas;
+    }
+
+    function syncSiraMax(nVal) {
+        let clampedN = Math.max(10, Math.min(29, nVal));
+        let siraSlider = document.getElementById('siraSlider');
+        let siraInput = document.getElementById('siraInput');
+        siraSlider.max = clampedN;
+        siraInput.max = clampedN;
+
+        let currentSira = parseInt(siraInput.value, 10);
+        if (!isNaN(currentSira) && currentSira > clampedN) {
+            siraInput.value = clampedN.toString();
+            siraInput.dataset.lastValid = siraInput.value;
+            siraSlider.value = clampedN;
+        }
+    }
+
+    function calculate() {
+        let vize = parseFloat(document.getElementById('vizeInput').value) || 0;
+        let final = parseFloat(document.getElementById('finalInput').value) || 0;
+        let ortalama = parseFloat(document.getElementById('ortInput').value) || 0;
+
+        let N = parseInt(document.getElementById('mevcutInput').value, 10);
+        if (isNaN(N) || N < 10) N = 10;
+        if (N > 29) N = 29;
+
+        let sira = parseInt(document.getElementById('siraInput').value, 10);
+        if (isNaN(sira) || sira < 1) sira = 1;
+        if (sira > N) sira = N;
+
+        let hamBasariNotu = (vize * 0.40) + (final * 0.60);
+        let basariNotu = Math.round(hamBasariNotu);
+
+        let yuvarlamaFarki = basariNotu - hamBasariNotu;
+        let roundIndicator = document.getElementById('valRounding');
+        if (Math.abs(yuvarlamaFarki) > 0.01) {
+            roundIndicator.style.visibility = 'visible';
+            if (yuvarlamaFarki > 0) {
+                roundIndicator.textContent = "+" + yuvarlamaFarki.toFixed(1);
+                roundIndicator.className = "rounding-indicator round-up";
+            } else {
+                roundIndicator.textContent = yuvarlamaFarki.toFixed(1);
+                roundIndicator.className = "rounding-indicator round-down";
+            }
+        } else {
+            roundIndicator.style.visibility = 'hidden';
+        }
+
+        let classLevel = getTable4Level(ortalama);
+        let badgeEl = document.getElementById('classLevelDisplay');
+        badgeEl.innerText = classLevel.name;
+        badgeEl.className = "class-level-badge " + classLevel.colorClass;
+
+        let quotas = calculateQuotas(classLevel, N);
+        let cumulative = [];
+        let cumSum = 0;
+        for (let q of quotas) {
+            cumSum += q;
+            cumulative.push(cumSum);
+        }
+
+        let isBelowBDKL = basariNotu < BDKL_BARAJI;
+        let isBelowBNAL = basariNotu < BNAL_BARAJI;
+        let isBelowYSSL = final < YSSL_BARAJI;
+
+        let finalGrade = "FF";
+        let isFFByBaraj = false;
+
+        if (isBelowYSSL || isBelowBNAL) {
+            finalGrade = "FF";
+            isFFByBaraj = true;
+        } else {
+            let gradeIdx = 0;
+            while (gradeIdx < 8 && sira > cumulative[gradeIdx]) {
+                gradeIdx++;
+            }
+            finalGrade = harfIsimleri[gradeIdx];
+        }
+
+        let boxBasari = document.getElementById('boxBasariNotu');
+        let boxSira = document.getElementById('boxSira');
+        let finalInputEl = document.getElementById('finalInput');
+        let finalWrapEl = document.getElementById('finalInputWrap');
+
+        boxBasari.classList.toggle('baraj-error', isBelowBNAL);
+        boxSira.classList.toggle('baraj-error', isBelowBDKL);
+        finalInputEl.classList.toggle('baraj-error', isBelowYSSL);
+        finalWrapEl.classList.toggle('has-error', isBelowYSSL);
+
+        document.getElementById('valBasariNotu').innerText = basariNotu;
+        document.getElementById('valSira').innerText = isBelowBDKL ? "-" : `${sira} / ${N}`;
+        document.getElementById('valHarfNotu').innerText = finalGrade;
+
+        let tbody = document.querySelector("#gradesTable tbody");
+        tbody.innerHTML = "";
+
+        harfIsimleri.forEach((grade, idx) => {
+            let tr = document.createElement("tr");
+            let displayGrade = grade;
+
+            if (["BA", "CB", "DC", "FD"].includes(grade)) {
+                tr.classList.add("stripe-gray");
+            }
+            if (grade === finalGrade && !isFFByBaraj) {
+                tr.className = "active-row";
+                displayGrade += " ★";
+            }
+            if (grade === "FF" && isFFByBaraj) {
+                tr.className = "active-row";
+                displayGrade += " ★";
+            }
+
+            let minR = idx === 0 ? 1 : cumulative[idx - 1] + 1;
+            let maxR = cumulative[idx];
+            let rangeText = "-";
+            if (maxR >= minR) {
+                rangeText = (minR === maxR) ? `${minR}. kişi` : `${minR} - ${maxR}. kişiler`;
+            }
+
+            let pctText = "%" + classLevel.p[idx].toFixed(1).replace('.', ',');
+
+            tr.innerHTML = `
+                <td>${displayGrade}</td>
+                <td>${pctText}</td>
+                <td>${rangeText}</td>
+                <td>${durumIsimleri[grade]}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    const inputs = [
+        { id: 'vize', isInt: true },
+        { id: 'final', isInt: true },
+        { id: 'ort', isInt: false },
+        { id: 'mevcut', isInt: true },
+        { id: 'sira', isInt: true }
+    ];
+
+    inputs.forEach(config => {
+        let slider = document.getElementById(config.id + 'Slider');
+        let numInput = document.getElementById(config.id + 'Input');
+        numInput.dataset.lastValid = numInput.value;
+
+        slider.addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            numInput.value = config.isInt ? val.toString() : val.toFixed(2);
+            numInput.dataset.lastValid = numInput.value;
+            if (config.id === 'mevcut') syncSiraMax(val);
+            calculate();
+        });
+
+        numInput.addEventListener('input', function() {
+            let rawVal = this.value;
+
+            if (config.isInt) {
+                rawVal = rawVal.replace(/[^0-9]/g, '');
+            } else {
+                rawVal = rawVal.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+                let parts = rawVal.split('.');
+                if (parts.length > 2) rawVal = parts[0] + '.' + parts.slice(1).join('');
+                parts = rawVal.split('.');
+                if (parts.length === 2 && parts[1].length > 2) {
+                    rawVal = parts[0] + '.' + parts[1].substring(0, 2);
+                }
+            }
+
+            while (rawVal.length > 1 && rawVal.startsWith('0') && rawVal[1] !== '.') {
+                rawVal = rawVal.substring(1);
+            }
+
+            let max = parseFloat(this.max);
+            if (rawVal !== '' && rawVal !== '.' && parseFloat(rawVal) > max) {
+                rawVal = this.dataset.lastValid || '';
+            }
+
+            this.value = rawVal;
+            this.dataset.lastValid = rawVal;
+
+            let min = parseFloat(this.min);
+            let numericVal = min;
+            if (rawVal !== '' && rawVal !== '.') {
+                numericVal = parseFloat(rawVal);
+            }
+            if (numericVal < min) numericVal = min;
+            slider.value = numericVal;
+
+            if (config.id === 'mevcut') syncSiraMax(numericVal);
+            calculate();
+        });
+
+        numInput.addEventListener('blur', function() {
+            if (this.value === '') return;
+
+            let val = parseFloat(this.value) || 0;
+            let min = parseFloat(this.min);
+            let max = parseFloat(this.max);
+
+            if (val < min) val = min;
+            if (val > max) val = max;
+
+            if (config.isInt) {
+                this.value = Math.round(val).toString();
+            } else {
+                this.value = (Math.round(val * 100) / 100).toFixed(2);
+            }
+            this.dataset.lastValid = this.value;
+            slider.value = this.value;
+
+            if (config.id === 'mevcut') syncSiraMax(parseInt(this.value, 10));
+            calculate();
+        });
+
+        numInput.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                let max = parseFloat(this.max);
+                let min = parseFloat(this.min);
+                let val = parseFloat(this.value);
+                if (isNaN(val)) val = min;
+                let step = config.isInt ? 1 : 0.01;
+
+                if (e.key === 'ArrowUp') {
+                    val = Math.min(max, val + step);
+                } else if (e.key === 'ArrowDown') {
+                    val = Math.max(min, val - step);
+                }
+
+                if (config.isInt) {
+                    this.value = Math.round(val).toString();
+                } else {
+                    val = Math.round(val * 100) / 100;
+                    this.value = val.toFixed(2);
+                }
+
+                this.dataset.lastValid = this.value;
+                slider.value = this.value;
+
+                if (config.id === 'mevcut') syncSiraMax(parseInt(this.value, 10));
+                calculate();
+            }
+        });
+    });
+
+    calculate();
+</script>
+
+</body>
+</html>

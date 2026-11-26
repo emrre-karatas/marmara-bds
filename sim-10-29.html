@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="./manifest.json">
+    <title>BDS Simülasyonu (10-29 Kişi)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #000000; 
+            color: #d1d5db;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* ANA KONTEYNER */
+        .container {
+            background-color: #0a0a0a; 
+            width: 100%;
+            max-width: 950px; 
+            height: 96vh; 
+            padding: 2.5vh 40px; 
+            border-radius: 12px;
+            border: 1px solid #161618; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            gap: 2vh; 
+        }
+        
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1a1a1c;
+            padding-bottom: 1.5vh; 
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background-color: #111113;
+            border: 1px solid #27272a;
+            color: #a1a1aa;
+            text-decoration: none;
+            font-size: 16px;
+            line-height: 1;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .back-btn:hover {
+            color: #ffffff;
+            border-color: #3f3f46;
+            background-color: #18181b;
+        }
+        h2 { margin: 0; color: #f8fafc; font-weight: 500; font-size: 22px; letter-spacing: 0.5px; } 
+        
+        /* SAĞ ÜST AÇILIR MENÜ (DROPDOWN) */
+        .level-container { display: flex; align-items: center; gap: 10px; }
+        .level-label { color: #a1a1aa; font-size: 14px; font-weight: 500; }
+        .custom-select {
+            background-color: #111113;
+            color: #4ade80;
+            border: 1px solid #4ade8040;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.1);
+        }
+        .custom-select:hover { border-color: #4ade8080; background-color: #18181b; }
+        .custom-select option { background-color: #0a0a0a; color: #ffffff; }
+
+        /* TABLO ALANI */
+        .table-container { 
+            flex-grow: 1; 
+            background-color: #000000; 
+            border-radius: 10px;
+            border: 1px solid #1a1a1c; 
+            overflow: hidden; 
+            display: flex;
+            flex-direction: column;
+        }
+        table { width: 100%; height: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 0 16px; border-bottom: 1px solid #141416; vertical-align: middle; }
+        th { background-color: #0a0a0a; border-bottom: 1px solid #1a1a1c; }
+        th span {
+            background-color: #1f1a13; color: #e5c07b; 
+            padding: 4px 10px; border-radius: 6px;
+            font-weight: 500; font-size: 13px; display: inline-block;
+        }
+        td { color: #ffffff; font-size: 14.5px; }
+        tr:last-child td { border-bottom: none; }
+        tr.stripe-gray td { background-color: #111113; }
+        tr:hover td { background-color: #18181b; }
+        tr.active-row td { 
+            background-color: #2962ff !important; 
+            color: #ffffff; font-weight: 500; 
+            border-bottom: 1px solid #2962ff; 
+        }
+        
+        /* SONUÇLAR ALANI VE RADARLAR */
+        .results-container {
+            display: flex; justify-content: space-around; text-align: center;
+            padding: 1.5vh 0; background-color: transparent; 
+            border-radius: 10px; border: 1px solid #1a1a1c;
+        }
+        .result-box { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 32%; }
+        .result-label { color: #8b8b93; font-size: 13.5px;}
+        .result-value { 
+            font-size: 24px; font-weight: 600; color: #ffffff;
+            background-color: #000000; border: 1px solid #1f1f22;
+            padding: 4px 10px; border-radius: 8px; width: 140px; height: 42px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; 
+        }
+        .rounding-indicator { position: absolute; left: 12px; font-size: 14px; font-weight: 500; }
+        .round-up { color: #4ade80; }
+        .round-down { color: #f87171; }
+
+        /* RADAR TASARIMI (Top 3 + Diğer) */
+        .radar-container { display: flex; gap: 6px; font-size: 11.5px; color: #a1a1aa; margin-top: 2px; }
+        .radar-item { background: #18181b; padding: 3px 7px; border-radius: 4px; border: 1px solid #27272a; }
+        .radar-diger { cursor: pointer; position: relative; background: #1f1f22; color: #d1d5db; border-color: #3f3f46; }
+        .radar-diger:hover { background: #27272a; }
+        
+        /* Tooltip (Açılır Liste) */
+        .tooltip { 
+            display: none; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); 
+            background: #0a0a0a; border: 1px solid #3f3f46; padding: 8px 12px; border-radius: 8px; 
+            z-index: 100; width: max-content; box-shadow: 0 -5px 20px rgba(0,0,0,0.8); 
+            flex-direction: column; gap: 5px; text-align: left;
+        }
+        .radar-diger:hover .tooltip { display: flex; }
+        .tooltip-item { display: flex; justify-content: space-between; gap: 15px; font-size: 12px; color: #e5e7eb; }
+        .tooltip-zero { color: #71717a; margin-top: 4px; padding-top: 4px; border-top: 1px solid #27272a; font-size: 11px; }
+        
+        /* KONTROLLER (4x2 Grid) */
+        .controls {
+            display: grid; grid-template-columns: 1fr 1fr;
+            column-gap: 50px; row-gap: 1.5vh; padding: 0 10px;
+        }
+        .control-group { display: flex; align-items: center; justify-content: space-between; }
+        .control-group label { width: 140px; color: #a1a1aa; font-size: 14px; }
+        .control-group label.sim-label { color: #4ade80; font-weight: 500; }
+        
+        .control-group input[type=range] { 
+            flex-grow: 1; margin: 0 20px; cursor: pointer; 
+            -webkit-appearance: none; background: transparent;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; background: #27272a; border-radius: 3px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px;
+            border-radius: 50%; background: #d4d4d8; margin-top: -6px;
+        }
+        .control-group input.num-box {
+            width: 70px; height: 32px; background: #000000; border: 1px solid #27272a; 
+            color: white; padding: 4px; border-radius: 6px; 
+            text-align: center; font-size: 15px; outline: none; transition: border 0.2s, opacity 0.2s;
+        }
+        .control-group input.num-box:focus { border-color: #2962ff; }
+        .control-group input.num-box.input-warn {
+            border-color: #fb923c !important;
+            box-shadow: 0 0 8px rgba(251, 146, 60, 0.22);
+        }
+        
+        /* 8. Parametre Dropdown + Opsiyonel Std. Sapma Stili */
+        .char-select {
+            width: 112px; margin: 0 10px 0 8px; background-color: #111113; color: #d1d5db;
+            border: 1px solid #3f3f46; padding: 5px 6px; border-radius: 6px;
+            font-size: 12.5px; outline: none; cursor: pointer;
+        }
+        .char-select:focus { border-color: #2962ff; }
+
+        .control-group-mixed {
+            display: flex; align-items: center; justify-content: space-between; gap: 6px;
+        }
+        .control-group-mixed .char-label {
+            width: auto; color: #a1a1aa; font-size: 13.5px; white-space: nowrap;
+        }
+        .std-wrapper {
+            display: flex; align-items: center; gap: 7px; margin-left: auto;
+        }
+        .std-toggle-label {
+            display: flex; align-items: center; gap: 5px; width: auto !important;
+            cursor: pointer; user-select: none; color: #71717a; font-size: 12.5px !important;
+            transition: color 0.2s; white-space: nowrap;
+        }
+        .std-toggle-label:hover { color: #d1d5db; }
+        .std-toggle-label.active { color: #4ade80; font-weight: 500; }
+        .std-check-box {
+            width: 15px; height: 15px; border-radius: 4px;
+            border: 1px solid #3f3f46; background: #111113;
+            display: inline-flex; align-items: center; justify-content: center;
+            transition: all 0.2s; flex-shrink: 0;
+        }
+        .std-toggle-label.active .std-check-box {
+            border-color: #4ade80; background: #4ade8025;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.2);
+        }
+        .std-check-box::after {
+            content: ""; width: 4px; height: 8px;
+            border: solid #4ade80; border-width: 0 2px 2px 0;
+            transform: rotate(45deg) translate(-0.5px, -1px);
+            display: none;
+        }
+        .std-toggle-label.active .std-check-box::after { display: block; }
+        .std-input-box.inactive {
+            color: #52525b !important; border-color: #1f1f22 !important;
+            background: #070708 !important; cursor: pointer;
+        }
+        .std-input-box.active-std {
+            border-color: #4ade8060 !important;
+            box-shadow: 0 0 8px rgba(74, 222, 128, 0.12);
+        }
+        .std-input-box.active-std:focus {
+            border-color: #4ade80 !important;
+        }
+
+        /* Mobil Uyum (Masaüstü görünümüne dokunmaz) */
+        @media (max-width: 768px) {
+            body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                overflow-x: hidden;
+                align-items: flex-start;
+                padding: 8px;
+            }
+            .container {
+                height: auto;
+                padding: 14px 12px;
+                gap: 14px;
+            }
+            .header-row {
+                flex-wrap: wrap;
+                gap: 10px;
+                padding-bottom: 10px;
+            }
+            h2 { font-size: 16.5px; }
+            .level-container { width: 100%; justify-content: space-between; }
+            .custom-select { flex-grow: 1; font-size: 13px; }
+            th, td { padding: 9px 10px; font-size: 13.5px; }
+            th span { font-size: 11.5px; padding: 3px 7px; }
+            .results-container { padding: 10px 6px; gap: 4px; }
+            .result-box { width: 32.5%; }
+            .result-label { font-size: 11.5px; }
+            .result-value { width: 100%; max-width: 110px; height: 38px; font-size: 18px; }
+            .rounding-indicator { left: 6px; font-size: 11.5px; }
+            .radar-container { flex-wrap: wrap; justify-content: center; gap: 4px; font-size: 10.5px; }
+            .radar-item { padding: 2px 5px; }
+            #radarHarf .tooltip { left: auto; right: 0; transform: none; }
+            .controls { grid-template-columns: 1fr; row-gap: 12px; padding: 0 2px; }
+            .control-group label { width: 112px; font-size: 13px; }
+            .control-group input[type=range] { margin: 0 10px; }
+            .control-group input.num-box { width: 62px; font-size: 14px; }
+            .control-group-mixed { flex-wrap: wrap; gap: 8px; }
+            .char-select { flex-grow: 1; margin: 0; }
+            .std-wrapper { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-row">
+        <div class="header-left">
+            <a class="back-btn" href="./index.html" title="Ana Menü">←</a>
+            <h2>BDS Simülasyonu (10.000 Evren)</h2>
+        </div>
+        <div class="level-container">
+            <span class="level-label">Filtre:</span>
+            <select id="universeFilter" class="custom-select">
+                <option value="ALL">TÜM İHTİMALLER Yükleniyor...</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="table-container">
+        <table id="gradesTable">
+            <thead>
+                <tr>
+                    <th><span>Harf Notu</span></th>
+                    <th><span>İhtimal</span></th>
+                    <th><span>En Olası Aralık</span></th>
+                    <th><span>Durum</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- JS ile Doldurulacak -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="results-container">
+        <div class="result-box">
+            <span class="result-label">Başarı Notu</span>
+            <div class="result-value">
+                <span id="valRounding" class="rounding-indicator" style="visibility: hidden;"></span>
+                <span id="valBasariNotu">0</span>
+            </div>
+            <div class="radar-container" style="visibility: hidden;"><div class="radar-item">Sabit</div></div>
+        </div>
+        <div class="result-box">
+            <span class="result-label">Tahmini Sıra</span>
+            <div class="result-value" id="valTahminiSira">0</div>
+            <div id="radarSira"></div>
+        </div>
+        <div class="result-box">
+            <span class="result-label">Harf Notu</span>
+            <div class="result-value" id="valHarfNotu">-</div>
+            <div id="radarHarf"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <!-- Satır 1 -->
+        <div class="control-group">
+            <label>Vize Notu</label>
+            <input type="range" id="vizeSlider" min="0" max="100" step="1" value="60">
+            <input type="text" inputmode="numeric" class="num-box" id="vizeInput" min="0" max="100" step="1" value="60">
+        </div>
+        <div class="control-group">
+            <label class="sim-label">Final Notu</label>
+            <input type="range" id="finalSlider" min="0" max="100" step="1" value="70">
+            <input type="text" inputmode="numeric" class="num-box" id="finalInput" min="0" max="100" step="1" value="70">
+        </div>
+
+        <!-- Satır 2 -->
+        <div class="control-group">
+            <label>Vize Sıralaması</label>
+            <input type="range" id="siraSlider" min="1" max="29" step="1" value="8">
+            <input type="text" inputmode="numeric" class="num-box" id="siraInput" min="1" max="29" step="1" value="8">
+        </div>
+        <div class="control-group">
+            <label>Sınıf Mevcudu</label>
+            <input type="range" id="mevcutSlider" min="10" max="29" step="1" value="21">
+            <input type="text" inputmode="numeric" class="num-box" id="mevcutInput" min="10" max="29" step="1" value="21">
+        </div>
+
+        <!-- Satır 3 -->
+        <div class="control-group">
+            <label>Min Not (Vize)</label>
+            <input type="range" id="minSlider" min="0" max="100" step="1" value="30">
+            <input type="text" inputmode="numeric" class="num-box" id="minInput" min="0" max="100" step="1" value="30">
+        </div>
+        <div class="control-group">
+            <label>Max Not (Vize)</label>
+            <input type="range" id="maxSlider" min="0" max="100" step="1" value="100">
+            <input type="text" inputmode="numeric" class="num-box" id="maxInput" min="0" max="100" step="1" value="100">
+        </div>
+
+        <!-- Satır 4 -->
+        <div class="control-group">
+            <label>Vize Ortalaması</label>
+            <input type="range" id="ortSlider" min="0" max="100" step="0.01" value="54.35">
+            <input type="text" inputmode="decimal" class="num-box" id="ortInput" min="0" max="100" step="0.01" value="54.35">
+        </div>
+        <div class="control-group control-group-mixed">
+            <label class="char-label">Sınıf Karakteri</label>
+            <select id="classCharacter" class="char-select">
+                <option value="ALL">Tüm İhtimaller</option>
+                <option value="ISTIKRARLI">İstikrarlı</option>
+                <option value="NORMAL">Normal</option>
+                <option value="SURPRIZLI">Sürprizli</option>
+            </select>
+            <div class="std-wrapper" title="Vize standart sapması biliniyorsa tek tıkla aktif edip el ile girebilirsiniz (örn: 12,75). Kapalıyken çoklu olası standart sapma evrenleri otomatik simüle edilir.">
+                <label id="stdToggle" class="std-toggle-label">
+                    <span class="std-check-box"></span>
+                    <span>Std. Sapma</span>
+                </label>
+                <input type="text" inputmode="decimal" class="num-box std-input-box inactive" id="stdInput" placeholder="Oto" readonly>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const YSSL_BARAJI = 40;
+    const BNAL_BARAJI = 40;
+    const BDKL_BARAJI = 25;
+    const VIZE_AGIRLIK = 0.40;
+    const FINAL_AGIRLIK = 0.60;
+    const VIZE_UNIVERSE_COUNT = 100;
+    const FINAL_PER_UNIVERSE = 100;
+    const SIM_COUNT = VIZE_UNIVERSE_COUNT * FINAL_PER_UNIVERSE;
+
+    const durumIsimleri = {
+        "AA": "Mükemmel", "BA": "Çok İyi", "BB": "İyi",
+        "CB": "Ortanın Üstü", "CC": "Orta", "DC": "Koşullu Geçer",
+        "DD": "Koşullu Geçer", "FD": "Başarısız", "FF": "Başarısız"
+    };
+    const harfİsimleri = ['AA', 'BA', 'BB', 'CB', 'CC', 'DC', 'DD', 'FD', 'FF'];
+
+    const TABLE_4 = [
+        { min: 70.0, name: "MÜKEMMEL", color: "#4ade80", p: [24.0, 15.2, 22.8, 11.6, 17.4, 4.8, 3.2, 0.2, 0.8] },
+        { min: 62.5, name: "PEKİYİ", color: "#38bdf8", p: [18.0, 14.4, 21.6, 12.8, 19.2, 7.2, 4.8, 0.4, 1.6] },
+        { min: 57.5, name: "İYİ", color: "#38bdf8", p: [14.0, 12.8, 19.2, 14.4, 21.6, 9.0, 6.0, 0.6, 2.4] },
+        { min: 52.5, name: "ORTANIN ÜSTÜ", color: "#fb923c", p: [10.0, 11.6, 17.4, 14.8, 22.2, 12.0, 8.0, 0.8, 3.2] },
+        { min: 47.5, name: "ORTA", color: "#fb923c", p: [7.0, 9.6, 14.4, 15.2, 22.8, 14.4, 9.6, 1.4, 5.6] },
+        { min: 42.5, name: "ZAYIF", color: "#f87171", p: [4.0, 8.0, 12.0, 14.8, 22.2, 17.4, 11.6, 2.0, 8.0] },
+        { min: 0.0, name: "KÖTÜ", color: "#f87171", p: [3.0, 6.0, 9.0, 14.4, 21.6, 19.2, 12.8, 2.8, 11.2] }
+    ];
+
+    let globalSimResults = null;
+    let debounceTimer;
+    let isStdActive = false;
+    let selectedUniverseFilter = 'ALL';
+
+    function bdsYuvarla(deger) {
+        return Number(Math.round(deger + 'e2') + 'e-2');
+    }
+
+    function getTable4Level(avg) {
+        if (avg > 70.00) return TABLE_4[0];
+        if (avg > 62.50) return TABLE_4[1];
+        if (avg > 57.50) return TABLE_4[2];
+        if (avg > 52.50) return TABLE_4[3];
+        if (avg > 47.50) return TABLE_4[4];
+        if (avg > 42.50) return TABLE_4[5];
+        return TABLE_4[6];
+    }
+
+    function calculateQuotas(levelObj, nEval) {
+        if (nEval <= 0) return new Array(levelObj.p.length).fill(0);
+        let quotas = levelObj.p.map(q => Math.round((q * nEval) / 100));
+        let quotaSum = quotas.reduce((a, b) => a + b, 0);
+        let diff = nEval - quotaSum;
+        if (diff > 0) {
+            let i = 0;
+            while (diff > 0) {
+                quotas[i]++;
+                diff--;
+                i = (i + 1) % quotas.length;
+            }
+        } else if (diff < 0) {
+            let i = quotas.length - 1;
+            while (diff < 0) {
+                if (quotas[i] > 0) {
+                    quotas[i]--;
+                    diff++;
+                }
+                i--;
+                if (i < 0) i = quotas.length - 1;
+            }
+        }
+        return quotas;
+    }
+
+    function randomGaussian() {
+        let u = 0, v = 0;
+        while(u === 0) u = Math.random();
+        while(v === 0) v = Math.random();
+        return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+    }
+
+    function inverseNormalCDF(p) {
+        if (p <= 0.0001) p = 0.0001;
+        if (p >= 0.9999) p = 0.9999;
+        let sign = 1;
+        let q = p;
+        if (p < 0.5) { sign = -1; q = p; }
+        else { sign = 1; q = 1 - p; }
+        let t = Math.sqrt(-2.0 * Math.log(q));
+        let c0 = 2.515517, c1 = 0.802853, c2 = 0.010328;
+        let d1 = 1.432788, d2 = 0.189269, d3 = 0.001308;
+        let z = t - (c0 + c1 * t + c2 * t * t) / (1 + d1 * t + d2 * t * t + d3 * t * t * t);
+        return sign * z;
+    }
+
+    function sampleTruncatedGaussian(mean, sigma, lo, hi) {
+        if (lo >= hi) return lo;
+        let s = Math.max(1.0, sigma);
+        for (let attempt = 0; attempt < 20; attempt++) {
+            let val = Math.round(mean + randomGaussian() * s);
+            if (val >= lo && val <= hi) return val;
+        }
+        let span = hi - lo;
+        if (mean <= lo) {
+            let val = Math.round(lo + Math.abs(randomGaussian()) * Math.min(s * 0.45, span * 0.35));
+            return Math.min(hi, Math.max(lo, val));
+        }
+        if (mean >= hi) {
+            let val = Math.round(hi - Math.abs(randomGaussian()) * Math.min(s * 0.45, span * 0.35));
+            return Math.min(hi, Math.max(lo, val));
+        }
+        return lo + Math.round(Math.random() * span);
+    }
+
+    function buildVizeSigmaPlan(N, min, max, ort, userVize, userRank, count) {
+        let range = max - min;
+        if (range <= 0) return new Array(count).fill(0);
+
+        let dN = 1.25 + 0.82 * Math.log(N);
+        let sigmaRange = range / dN;
+
+        let pRank = 1 - ((userRank - 0.5) / N);
+        let zRank = inverseNormalCDF(pRank);
+        let centerSigma = sigmaRange;
+
+        if (Math.abs(zRank) >= 0.25 && (userVize - ort) * zRank > 0) {
+            let sigmaRank = (userVize - ort) / zRank;
+            let clampedRankSigma = Math.max(sigmaRange * 0.40, Math.min(sigmaRange * 1.85, sigmaRank));
+            centerSigma = 0.55 * clampedRankSigma + 0.45 * sigmaRange;
+        }
+
+        let minPlausible = Math.max(0.5, sigmaRange * 0.45);
+        let maxPlausible = Math.min(range * 0.5, Math.max(sigmaRange * 1.65, centerSigma * 1.50));
+
+        let sigmas = new Array(count);
+        for (let u = 0; u < count; u++) {
+            let pStrat = (u + Math.random()) / count;
+            let zStrat = inverseNormalCDF(pStrat);
+            let sVal = centerSigma * Math.exp(zStrat * 0.18);
+            sigmas[u] = Math.max(minPlausible, Math.min(maxPlausible, sVal));
+        }
+        return sigmas;
+    }
+
+    function generateVirtualClass(N, min, max, ort, userVize, userRank, targetStd) {
+        let arr = new Array(N).fill(min);
+        let userIdx = userRank - 1;
+
+        if (min >= max) {
+            return new Array(N).fill(min);
+        }
+
+        arr[userIdx] = userVize;
+        let lockFirst = (userIdx > 0);
+        let lockLast = (userIdx < N - 1);
+        if (lockFirst) arr[0] = max;
+        if (lockLast) arr[N - 1] = min;
+
+        let upperStart = 1;
+        let upperEnd = userIdx - 1;
+        let lowerStart = userIdx + 1;
+        let lowerEnd = N - 2;
+
+        let upperFreeCount = upperEnd >= upperStart ? (upperEnd - upperStart + 1) : 0;
+        let lowerFreeCount = lowerEnd >= lowerStart ? (lowerEnd - lowerStart + 1) : 0;
+
+        if (upperFreeCount > 0) {
+            let upperVals = new Array(upperFreeCount);
+            for (let k = 0; k < upperFreeCount; k++) {
+                upperVals[k] = sampleTruncatedGaussian(ort, targetStd, userVize, max);
+            }
+            upperVals.sort((a, b) => b - a);
+            for (let k = 0; k < upperFreeCount; k++) {
+                arr[upperStart + k] = upperVals[k];
+            }
+        }
+
+        if (lowerFreeCount > 0) {
+            let lowerVals = new Array(lowerFreeCount);
+            for (let k = 0; k < lowerFreeCount; k++) {
+                lowerVals[k] = sampleTruncatedGaussian(ort, targetStd, min, userVize);
+            }
+            lowerVals.sort((a, b) => b - a);
+            for (let k = 0; k < lowerFreeCount; k++) {
+                arr[lowerStart + k] = lowerVals[k];
+            }
+        }
+
+        let freeIndices = [];
+        for (let i = upperStart; i <= upperEnd; i++) freeIndices.push(i);
+        for (let i = lowerStart; i <= lowerEnd; i++) freeIndices.push(i);
+        let F = freeIndices.length;
+        if (F === 0) return arr;
+
+        let lockedSum = userVize + (lockFirst ? max : 0) + (lockLast ? min : 0);
+        let minPossibleSum = lockedSum + upperFreeCount * userVize + lowerFreeCount * min;
+        let maxPossibleSum = lockedSum + upperFreeCount * max + lowerFreeCount * userVize;
+        let targetSum = Math.max(minPossibleSum, Math.min(maxPossibleSum, Math.round(ort * N)));
+
+        let currentSum = 0;
+        for (let i = 0; i < N; i++) currentSum += arr[i];
+        let diff = targetSum - currentSum;
+
+        let meanIter = Math.abs(diff) * 4 + 200;
+        while (diff !== 0 && meanIter-- > 0) {
+            let startOffset = Math.floor(Math.random() * F);
+            let moved = false;
+            if (diff > 0) {
+                for (let t = 0; t < F; t++) {
+                    let idx = freeIndices[(startOffset + t) % F];
+                    if (arr[idx] < arr[idx - 1]) {
+                        arr[idx]++;
+                        diff--;
+                        moved = true;
+                        break;
+                    }
+                }
+            } else {
+                for (let t = 0; t < F; t++) {
+                    let idx = freeIndices[(startOffset + t) % F];
+                    if (arr[idx] > arr[idx + 1]) {
+                        arr[idx]--;
+                        diff++;
+                        moved = true;
+                        break;
+                    }
+                }
+            }
+            if (!moved) break;
+        }
+
+        if (targetStd >= 0 && F >= 2) {
+            let sumX = 0, sumX2 = 0;
+            for (let i = 0; i < N; i++) {
+                sumX += arr[i];
+                sumX2 += arr[i] * arr[i];
+            }
+
+            let targetSumX2 = N * (targetStd * targetStd) + (sumX * sumX) / N;
+            let tolerance = N * 0.04;
+            let swapMaxIter = 300;
+            let consecutiveFails = 0;
+
+            while (swapMaxIter-- > 0 && Math.abs(sumX2 - targetSumX2) > tolerance && consecutiveFails < 25) {
+                let needIncrease = sumX2 < targetSumX2;
+                let swapped = false;
+
+                if (needIncrease) {
+                    let a = Math.floor(Math.random() * F);
+                    let b = Math.floor(Math.random() * F);
+                    if (a === b) { consecutiveFails++; continue; }
+                    let idxI = freeIndices[a < b ? a : b];
+                    let idxJ = freeIndices[a < b ? b : a];
+
+                    if (arr[idxI] < arr[idxI - 1] && arr[idxJ] > arr[idxJ + 1]) {
+                        let delta = 2 * (arr[idxI] - arr[idxJ]) + 2;
+                        if (Math.abs((sumX2 + delta) - targetSumX2) < Math.abs(sumX2 - targetSumX2)) {
+                            arr[idxI]++;
+                            arr[idxJ]--;
+                            sumX2 += delta;
+                            swapped = true;
+                        }
+                    }
+                } else {
+                    let a = Math.floor(Math.random() * F);
+                    let b = Math.floor(Math.random() * F);
+                    if (a === b) { consecutiveFails++; continue; }
+                    let idxI = freeIndices[a < b ? a : b];
+                    let idxJ = freeIndices[a < b ? b : a];
+
+                    if (arr[idxI] >= arr[idxJ] + 2 && arr[idxI] > arr[idxI + 1] && arr[idxJ] < arr[idxJ - 1]) {
+                        let delta = 2 * (arr[idxJ] - arr[idxI]) + 2;
+                        if (Math.abs((sumX2 + delta) - targetSumX2) < Math.abs(sumX2 - targetSumX2)) {
+                            arr[idxI]--;
+                            arr[idxJ]++;
+                            sumX2 += delta;
+                            swapped = true;
+                        }
+                    }
+                }
+
+                if (swapped) {
+                    consecutiveFails = 0;
+                } else {
+                    consecutiveFails++;
+                    if (consecutiveFails === 15) {
+                        let incList = [];
+                        let decList = [];
+                        for (let k = 0; k < F; k++) {
+                            let idx = freeIndices[k];
+                            if (arr[idx] < arr[idx - 1]) incList.push(idx);
+                            if (arr[idx] > arr[idx + 1]) decList.push(idx);
+                        }
+                        let foundDet = false;
+                        if (needIncrease && incList.length > 0 && decList.length > 0) {
+                            for (let p = 0; p < incList.length && !foundDet; p++) {
+                                let idxI = incList[Math.floor(Math.random() * incList.length)];
+                                for (let q = decList.length - 1; q >= 0; q--) {
+                                    let idxJ = decList[q];
+                                    if (idxI < idxJ) {
+                                        let delta = 2 * (arr[idxI] - arr[idxJ]) + 2;
+                                        if (Math.abs((sumX2 + delta) - targetSumX2) < Math.abs(sumX2 - targetSumX2)) {
+                                            arr[idxI]++;
+                                            arr[idxJ]--;
+                                            sumX2 += delta;
+                                            foundDet = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (!needIncrease && decList.length > 0 && incList.length > 0) {
+                            for (let p = 0; p < decList.length && !foundDet; p++) {
+                                let idxI = decList[Math.floor(Math.random() * decList.length)];
+                                for (let q = incList.length - 1; q >= 0; q--) {
+                                    let idxJ = incList[q];
+                                    if (idxI < idxJ && arr[idxI] >= arr[idxJ] + 2) {
+                                        let delta = 2 * (arr[idxJ] - arr[idxI]) + 2;
+                                        if (Math.abs((sumX2 + delta) - targetSumX2) < Math.abs(sumX2 - targetSumX2)) {
+                                            arr[idxI]--;
+                                            arr[idxJ]++;
+                                            sumX2 += delta;
+                                            foundDet = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (foundDet) consecutiveFails = 0;
+                    }
+                }
+            }
+        }
+
+        return arr;
+    }
+
+    function runMonteCarlo(userVize, userFinal, userRank, N, minNot, maxNot, ort, selectedChar, knownStd) {
+        let results = { total: SIM_COUNT, levels: {}, overall: { grades: {}, ranks: {}, nEvalCounts: {} } };
+        harfİsimleri.forEach(g => results.overall.grades[g] = 0);
+        for(let i=1; i<=N; i++) results.overall.ranks[i] = 0;
+
+        let sigmaPlan = (knownStd !== null)
+            ? new Array(VIZE_UNIVERSE_COUNT).fill(knownStd)
+            : buildVizeSigmaPlan(N, minNot, maxNot, ort, userVize, userRank, VIZE_UNIVERSE_COUNT);
+
+        for (let u = 0; u < VIZE_UNIVERSE_COUNT; u++) {
+            let baseVize = generateVirtualClass(N, minNot, maxNot, ort, userVize, userRank, sigmaPlan[u]);
+
+            for (let fRun = 0; fRun < FINAL_PER_UNIVERSE; fRun++) {
+                let scenario = selectedChar;
+                if (scenario === 'ALL') {
+                    let rand = Math.random();
+                    if (rand < 0.6) scenario = 'NORMAL';
+                    else if (rand < 0.8) scenario = 'ISTIKRARLI';
+                    else scenario = 'SURPRIZLI';
+                }
+
+                let commonShock = 0;
+                let shockRoll = Math.random();
+                if (scenario === 'ISTIKRARLI' && shockRoll < 0.05) commonShock = (Math.random() * 6) - 3;
+                else if (scenario === 'NORMAL' && shockRoll < 0.20) commonShock = (Math.random() * 16) - 8;
+                else if (scenario === 'SURPRIZLI' && shockRoll < 0.40) commonShock = (Math.random() * 30) - 15;
+
+                let students = [];
+                
+                for(let i=0; i<N; i++) {
+                    let isUser = (i === userRank - 1);
+                    let vize = baseVize[i];
+                    let final = vize + commonShock;
+
+                    if (isUser) {
+                        final = userFinal; 
+                    } else {
+                        if (scenario === 'ISTIKRARLI') {
+                            final += (ort - vize) * 0.1 + randomGaussian() * 4;
+                        } else if (scenario === 'NORMAL') {
+                            let drift = (ort - vize) * 0.15;
+                            if (vize < 45) drift += 5;
+                            final += drift + randomGaussian() * 7;
+                            if (vize >= 75 && Math.random() < 0.05) final -= 15; 
+                            if (vize >= 85 && final < 60) final = 60 + Math.random()*5; 
+                        } else if (scenario === 'SURPRIZLI') {
+                            let drift = (ort - vize) * 0.25;
+                            if (vize < 45) drift += 8;
+                            final += drift + randomGaussian() * 12;
+                            if (vize >= 75 && Math.random() < 0.10) final -= 20; 
+                            if (vize <= 35 && final > 70) final = 65 + Math.random()*5; 
+                            if (vize >= 55 && vize <= 65 && final < 30) final = 30 + Math.random()*5; 
+                            if (vize >= 85) {
+                                if (final < 45) final = 45 + Math.random()*4;
+                                else if (final < 55 && Math.random() > 0.15) final = 55 + Math.random()*5;
+                            }
+                        }
+                        final = Math.round(final);
+                        if (final > 100) final = 100;
+                        if (final < 0) final = 0;
+                    }
+                    
+                    let basari = Math.round(vize * VIZE_AGIRLIK + final * FINAL_AGIRLIK);
+                    let isEligible = (basari >= BDKL_BARAJI && basari >= BNAL_BARAJI && final >= YSSL_BARAJI);
+                    students.push({
+                        id: i, basari: basari, final: final,
+                        isUser: isUser, isEligible: isEligible, tieRand: Math.random()
+                    });
+                }
+
+                let evalStudents = students.filter(s => s.basari >= BDKL_BARAJI);
+                let N_eval = evalStudents.length;
+                let basariOrt = N_eval > 0 ? bdsYuvarla(evalStudents.reduce((sum, s) => sum + s.basari, 0) / N_eval) : 0;
+                let level = getTable4Level(basariOrt);
+
+                students.sort((a, b) => {
+                    if (b.basari !== a.basari) return b.basari - a.basari;
+                    if (a.isEligible !== b.isEligible) return a.isEligible ? -1 : 1;
+                    return a.tieRand - b.tieRand;
+                });
+
+                let quotas = calculateQuotas(level, N_eval);
+                let cumulative = []; let cumSum = 0;
+                for (let q of quotas) { cumSum += q; cumulative.push(cumSum); }
+
+                let userG = 'FF', userR = 1;
+                let evalIndex = 0;
+                
+                for (let i = 0; i < N; i++) {
+                    let stu = students[i];
+                    if (stu.isUser) userR = i + 1;
+
+                    if (stu.basari < BDKL_BARAJI) {
+                        stu.gradeIdx = 8; stu.grade = 'FF';
+                    } else {
+                        if (!stu.isEligible) {
+                            stu.gradeIdx = 8; stu.grade = 'FF';
+                        } else {
+                            let standardIdx = 0;
+                            while(standardIdx < 8 && evalIndex >= cumulative[standardIdx]) standardIdx++;
+                            stu.gradeIdx = standardIdx;
+
+                            for (let j = i - 1; j >= 0; j--) {
+                                if (students[j].basari !== stu.basari) break;
+                                if (students[j].isEligible) {
+                                    stu.gradeIdx = students[j].gradeIdx;
+                                    break;
+                                }
+                            }
+                            stu.grade = harfİsimleri[stu.gradeIdx];
+                        }
+                        evalIndex++;
+                    }
+                    if (stu.isUser) userG = stu.grade;
+                }
+
+                results.overall.grades[userG]++;
+                results.overall.ranks[userR]++;
+                results.overall.nEvalCounts[N_eval] = (results.overall.nEvalCounts[N_eval] || 0) + 1;
+
+                if (!results.levels[level.name]) {
+                    results.levels[level.name] = { count: 0, grades: {}, ranks: {}, nEvalCounts: {}, color: level.color };
+                    harfİsimleri.forEach(g => results.levels[level.name].grades[g] = 0);
+                    for(let i=1; i<=N; i++) results.levels[level.name].ranks[i] = 0;
+                }
+                results.levels[level.name].count++;
+                results.levels[level.name].grades[userG]++;
+                results.levels[level.name].ranks[userR]++;
+                results.levels[level.name].nEvalCounts[N_eval] = (results.levels[level.name].nEvalCounts[N_eval] || 0) + 1;
+            }
+        }
+        return results;
+    }
+
+    function buildRadarHTML(dataObj, totalCount, isRank = false) {
+        let arr = Object.keys(dataObj).map(k => ({ key: k, count: dataObj[k] }));
+        arr.sort((a, b) => b.count - a.count); 
+
+        let top3 = arr.slice(0, 3).filter(x => x.count > 0);
+        let others = arr.slice(3);
+
+        let html = `<div class="radar-container">`;
+        top3.forEach(item => {
+            let pct = ((item.count / totalCount) * 100).toFixed(2).replace('.', ',');
+            let label = isRank ? `${item.key}.` : item.key;
+            html += `<div class="radar-item">${label}: %${pct}</div>`;
+        });
+
+        let otherCount = others.reduce((sum, x) => sum + x.count, 0);
+        if (otherCount > 0 || top3.length === 0) {
+            let pct = ((otherCount / totalCount) * 100).toFixed(2).replace('.', ',');
+            html += `<div class="radar-item radar-diger">Diğer: %${pct}`;
+            html += `<div class="tooltip">`;
+            
+            others.filter(x => x.count > 0).forEach(item => {
+                let p = ((item.count / totalCount) * 100).toFixed(2).replace('.', ',');
+                let label = isRank ? `${item.key}. Sıra` : item.key;
+                html += `<div class="tooltip-item"><span>${label}</span> <span>%${p}</span></div>`;
+            });
+            
+            let zeroItems = others.filter(x => x.count === 0).map(x => x.key);
+            if (zeroItems.length > 0) {
+                if (isRank) html += `<div class="tooltip-zero">Diğer Sıralar: %0,00</div>`;
+                else html += `<div class="tooltip-zero">${zeroItems.join(', ')}: %0,00</div>`;
+            }
+            html += `</div></div>`;
+        } else {
+            let zeroItems = others.map(x => x.key);
+            if(zeroItems.length > 0) {
+                html += `<div class="radar-item radar-diger">Diğer: %0,00`;
+                html += `<div class="tooltip">`;
+                if (isRank) html += `<div class="tooltip-zero">Diğer Sıralar: %0,00</div>`;
+                else html += `<div class="tooltip-zero">${zeroItems.join(', ')}: %0,00</div>`;
+                html += `</div></div>`;
+            }
+        }
+        html += `</div>`;
+        return html;
+    }
+
+    function renderUI() {
+        let filterSelect = document.getElementById('universeFilter');
+
+        if (selectedUniverseFilter !== 'ALL' && !globalSimResults.levels[selectedUniverseFilter]) {
+            selectedUniverseFilter = 'ALL';
+        }
+
+        let dominantLevel = Object.keys(globalSimResults.levels).reduce((a, b) => globalSimResults.levels[a].count > globalSimResults.levels[b].count ? a : b);
+        
+        if (filterSelect.options.length <= 1 || filterSelect.options[0].text.includes("Yükleniyor")) {
+            filterSelect.innerHTML = `<option value="ALL">TÜM İHTİMALLER</option>`;
+            let sortedLevels = Object.keys(globalSimResults.levels).sort((a, b) => globalSimResults.levels[b].count - globalSimResults.levels[a].count);
+            sortedLevels.forEach(lvl => {
+                let pct = ((globalSimResults.levels[lvl].count / SIM_COUNT) * 100).toFixed(2).replace('.', ',');
+                filterSelect.innerHTML += `<option value="${lvl}">${lvl} (%${pct})</option>`;
+            });
+            filterSelect.value = selectedUniverseFilter; 
+        }
+
+        let currentFilter = filterSelect.value;
+        let targetData = currentFilter === 'ALL' ? globalSimResults.overall : globalSimResults.levels[currentFilter];
+        let targetCount = currentFilter === 'ALL' ? SIM_COUNT : globalSimResults.levels[currentFilter].count;
+        let levelToUseForTable = currentFilter === 'ALL' ? dominantLevel : currentFilter;
+
+        let bestGrade = Object.keys(targetData.grades).reduce((a, b) => targetData.grades[a] > targetData.grades[b] ? a : b);
+        let bestRank = Object.keys(targetData.ranks).reduce((a, b) => targetData.ranks[a] > targetData.ranks[b] ? a : b);
+
+        document.getElementById('valHarfNotu').innerText = bestGrade;
+        document.getElementById('valTahminiSira').innerText = bestRank;
+
+        document.getElementById('radarHarf').innerHTML = buildRadarHTML(targetData.grades, targetCount, false);
+        document.getElementById('radarSira').innerHTML = buildRadarHTML(targetData.ranks, targetCount, true);
+
+        let lvlObj = TABLE_4.find(l => l.name === levelToUseForTable);
+        let modeNEval = parseInt(
+            Object.keys(targetData.nEvalCounts).reduce((a, b) => targetData.nEvalCounts[a] >= targetData.nEvalCounts[b] ? a : b),
+            10
+        ) || 0;
+
+        let quotas = calculateQuotas(lvlObj, modeNEval);
+        let cumulative = []; let cumSum = 0;
+        for (let q of quotas) { cumSum += q; cumulative.push(cumSum); }
+
+        let tbody = document.querySelector("#gradesTable tbody");
+        tbody.innerHTML = "";
+        
+        harfİsimleri.forEach((grade, idx) => {
+            let tr = document.createElement("tr");
+            let displayGrade = grade;
+            let rangeText = "-";
+            
+            if (["BA", "CB", "DC", "FD"].includes(grade)) tr.classList.add("stripe-gray");
+            if (grade === bestGrade) {
+                tr.className = "active-row";
+                displayGrade += " ★";
+            }
+            
+            let minR = idx === 0 ? 1 : cumulative[idx-1] + 1;
+            let maxR = cumulative[idx];
+            if (modeNEval > 0 && maxR >= minR) {
+                rangeText = (minR === maxR) ? `${minR}. kişi` : `${minR} - ${maxR}. kişiler`;
+            }
+
+            let prob = ((targetData.grades[grade] / targetCount) * 100).toFixed(2).replace('.', ',');
+            
+            tr.innerHTML = `
+                <td>${displayGrade}</td>
+                <td>%${prob}</td>
+                <td>${rangeText}</td>
+                <td>${durumIsimleri[grade]}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function getKnownStdValue() {
+        if (!isStdActive) return null;
+        let raw = document.getElementById('stdInput').value.trim().replace(/,/g, '.');
+        if (raw === '' || raw === '.') return null;
+        let parsed = parseFloat(raw);
+        if (isNaN(parsed) || parsed < 0) return null;
+        if (parsed > 50) parsed = 50;
+        return parsed;
+    }
+
+    function setWarn(id, hasWarn, msg = "") {
+        let el = document.getElementById(id);
+        if (!el) return;
+        if (hasWarn) {
+            el.classList.add('input-warn');
+            el.title = msg;
+        } else {
+            el.classList.remove('input-warn');
+            el.removeAttribute('title');
+        }
+    }
+
+    function handleInputChanged() {
+        let vizeRaw = parseFloat(document.getElementById('vizeInput').value) || 0;
+        let final = parseFloat(document.getElementById('finalInput').value) || 0;
+        let nRaw = parseInt(document.getElementById('mevcutInput').value) || 21;
+        let ortRaw = parseFloat(document.getElementById('ortInput').value) || 0;
+        let siraRaw = parseInt(document.getElementById('siraInput').value) || 1;
+        let minRaw = parseFloat(document.getElementById('minInput').value) || 0;
+        let maxRaw = parseFloat(document.getElementById('maxInput').value) || 100;
+        let charSelect = document.getElementById('classCharacter').value;
+        let knownStd = getKnownStdValue();
+
+        let vize = vizeRaw, N = nRaw, ort = ortRaw, sira = siraRaw, minNot = minRaw, maxNot = maxRaw;
+
+        if (N < 10) N = 10;
+        if (N > 29) N = 29;
+        if (minNot > maxNot) minNot = maxNot;
+        if (vize < minNot) minNot = vize;
+        if (vize > maxNot) maxNot = vize;
+        if (ort < minNot) ort = minNot;
+        if (ort > maxNot) ort = maxNot;
+        if (sira > N) sira = N;
+        if (sira < 1) sira = 1;
+
+        setWarn('mevcutInput', nRaw < 10 || nRaw > 29, "10-29 kişilik sistem için mevcut 10 ile 29 arasında olmalıdır (hesaplamada dengelendi).");
+        setWarn('siraInput', siraRaw < 1 || siraRaw > N, "Vize sıralaması sınıf mevcudunu aşamaz (hesaplamada dengelendi).");
+        setWarn('minInput', minRaw > maxRaw || vizeRaw < minRaw, "Min not, Max nottan veya vize notundan büyük olamaz (hesaplamada dengelendi).");
+        setWarn('maxInput', maxRaw < minRaw || vizeRaw > maxRaw, "Max not, Min nottan veya vize notundan küçük olamaz (hesaplamada dengelendi).");
+        setWarn('ortInput', ortRaw < minNot || ortRaw > maxNot, "Vize ortalaması Min-Max aralığının dışında olamaz (hesaplamada dengelendi).");
+
+        let basariRaw = (vize * VIZE_AGIRLIK) + (final * FINAL_AGIRLIK);
+        let basari = Math.round(basariRaw);
+        document.getElementById('valBasariNotu').innerText = basari;
+
+        let roundDiff = basari - basariRaw;
+        let roundEl = document.getElementById('valRounding');
+        if (Math.abs(roundDiff) > 0.001) { 
+            roundEl.style.visibility = 'visible';
+            if (roundDiff > 0) {
+                roundEl.textContent = "+" + roundDiff.toFixed(1);
+                roundEl.className = "rounding-indicator round-up";
+            } else {
+                roundEl.textContent = roundDiff.toFixed(1);
+                roundEl.className = "rounding-indicator round-down";
+            }
+        } else {
+            roundEl.style.visibility = 'hidden';
+        }
+
+        document.getElementById('radarHarf').innerHTML = '<span style="color:#71717a; font-size:12px;">Simüle ediliyor...</span>';
+        document.getElementById('radarSira').innerHTML = '<span style="color:#71717a; font-size:12px;">Simüle ediliyor...</span>';
+        document.getElementById('universeFilter').innerHTML = '<option value="ALL">TÜM İHTİMALLER Yükleniyor...</option>';
+
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            globalSimResults = runMonteCarlo(vize, final, sira, N, minNot, maxNot, ort, charSelect, knownStd);
+            renderUI();
+        }, 300); 
+    }
+
+    const stdToggle = document.getElementById('stdToggle');
+    const stdInput = document.getElementById('stdInput');
+    stdInput.dataset.lastValid = '';
+
+    function setStdActive(active, shouldFocus = false) {
+        isStdActive = active;
+        if (active) {
+            stdToggle.classList.add('active');
+            stdInput.readOnly = false;
+            stdInput.classList.remove('inactive');
+            stdInput.classList.add('active-std');
+            stdInput.placeholder = '12,75';
+            if (shouldFocus) {
+                stdInput.focus();
+                stdInput.select();
+            }
+        } else {
+            stdToggle.classList.remove('active');
+            stdInput.readOnly = true;
+            stdInput.classList.add('inactive');
+            stdInput.classList.remove('active-std');
+            stdInput.placeholder = 'Oto';
+            stdInput.blur();
+        }
+        handleInputChanged();
+    }
+
+    stdToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        setStdActive(!isStdActive, !isStdActive);
+    });
+
+    stdInput.addEventListener('click', () => {
+        if (!isStdActive) {
+            setStdActive(true, true);
+        }
+    });
+
+    stdInput.addEventListener('input', function() {
+        let rawVal = this.value.replace(/[^0-9.,]/g, '');
+        let normalized = rawVal.replace(/,/g, '.');
+        let parts = normalized.split('.');
+        if (parts.length > 2) {
+            let sep = rawVal.includes(',') ? ',' : '.';
+            rawVal = parts[0] + sep + parts.slice(1).join('');
+            normalized = parts[0] + '.' + parts.slice(1).join('');
+            parts = normalized.split('.');
+        }
+        if (parts.length === 2 && parts[1].length > 2) {
+            let sep = rawVal.includes(',') ? ',' : '.';
+            rawVal = parts[0] + sep + parts[1].substring(0, 2);
+            normalized = parts[0] + '.' + parts[1].substring(0, 2);
+        }
+        if (normalized !== '' && normalized !== '.' && parseFloat(normalized) > 50) {
+            rawVal = this.dataset.lastValid || '';
+        }
+        this.value = rawVal;
+        this.dataset.lastValid = rawVal;
+        handleInputChanged();
+    });
+
+    stdInput.addEventListener('blur', function() {
+        if (!isStdActive) return;
+        let raw = this.value.trim();
+        if (raw === '' || raw === ',' || raw === '.') {
+            this.value = '';
+            this.dataset.lastValid = '';
+            handleInputChanged();
+            return;
+        }
+        let val = parseFloat(raw.replace(/,/g, '.'));
+        if (isNaN(val) || val < 0) val = 0;
+        if (val > 50) val = 50;
+        this.value = val.toFixed(2).replace('.', ',');
+        this.dataset.lastValid = this.value;
+        handleInputChanged();
+    });
+
+    stdInput.addEventListener('keydown', function(e) {
+        if (!isStdActive) return;
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            let val = parseFloat(this.value.replace(/,/g, '.')) || 0;
+            val += (e.key === 'ArrowUp' ? 0.01 : -0.01);
+            val = Math.round(val * 100) / 100;
+            if (val < 0) val = 0;
+            if (val > 50) val = 50;
+            this.value = val.toFixed(2).replace('.', ',');
+            this.dataset.lastValid = this.value;
+            handleInputChanged();
+        }
+    });
+
+    document.getElementById('universeFilter').addEventListener('change', function() {
+        selectedUniverseFilter = this.value;
+        renderUI();
+    });
+    document.getElementById('classCharacter').addEventListener('change', handleInputChanged);
+
+    const inputs = [
+        { id: 'vize', isInt: true }, { id: 'final', isInt: true }, { id: 'ort', isInt: false },
+        { id: 'mevcut', isInt: true }, { id: 'min', isInt: true }, { id: 'max', isInt: true }, { id: 'sira', isInt: true }
+    ];
+
+    inputs.forEach(config => {
+        let slider = document.getElementById(config.id + 'Slider');
+        let numInput = document.getElementById(config.id + 'Input');
+        numInput.dataset.lastValid = numInput.value;
+        
+        slider.addEventListener('input', (e) => {
+            let val = parseFloat(e.target.value);
+            if (config.id === 'min') { let maxV = parseFloat(document.getElementById('maxInput').value); if (val > maxV) val = maxV; } 
+            else if (config.id === 'max') { let minV = parseFloat(document.getElementById('minInput').value); if (val < minV) val = minV; } 
+            else if (config.id === 'sira') { let nV = parseInt(document.getElementById('mevcutInput').value) || 21; if (val > nV) val = nV; }
+
+            e.target.value = val;
+            numInput.value = config.isInt ? val.toString() : val.toFixed(2);
+            numInput.dataset.lastValid = val;
+            
+            if(config.id === 'mevcut') {
+                document.getElementById('siraSlider').max = val;
+                let sInput = document.getElementById('siraInput');
+                if (parseInt(sInput.value) > val) { sInput.value = val; document.getElementById('siraSlider').value = val; }
+            }
+            handleInputChanged();
+        });
+        
+        numInput.addEventListener('input', function(e) {
+            let rawVal = this.value;
+            if (config.isInt) rawVal = rawVal.replace(/[^0-9]/g, '');
+            else {
+                rawVal = rawVal.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+                let parts = rawVal.split('.');
+                if (parts.length > 2) rawVal = parts[0] + '.' + parts.slice(1).join('');
+                if (parts.length === 2 && parts[1].length > 2) rawVal = parts[0] + '.' + parts[1].substring(0, 2);
+            }
+            while (rawVal.length > 1 && rawVal.startsWith('0') && rawVal[1] !== '.') rawVal = rawVal.substring(1);
+            let maxAttr = parseFloat(this.max);
+            if (rawVal !== '' && rawVal !== '.' && parseFloat(rawVal) > maxAttr) rawVal = this.dataset.lastValid || '';
+            this.value = rawVal;
+            this.dataset.lastValid = rawVal;
+
+            let numericVal = 0;
+            if (rawVal !== '' && rawVal !== '.') numericVal = parseFloat(rawVal);
+            slider.value = numericVal;
+            
+            if(config.id === 'mevcut') document.getElementById('siraSlider').max = Math.max(10, Math.min(29, numericVal || 10));
+            handleInputChanged();
+        });
+
+        numInput.addEventListener('blur', function(e) {
+            if (this.value === '') this.value = this.min;
+            let val = parseFloat(this.value) || 0;
+            let maxAttr = parseFloat(this.max);
+            let minAttr = parseFloat(this.min);
+            
+            if (config.id === 'mevcut') { if (val < 10) val = 10; if (val > 29) val = 29; }
+            if (config.id === 'sira') { let nV = parseInt(document.getElementById('mevcutInput').value) || 21; if (val < 1) val = 1; if (val > nV) val = nV; }
+            if (config.id === 'min') { let maxV = parseFloat(document.getElementById('maxInput').value); if (val > maxV) val = maxV; } 
+            else if (config.id === 'max') { let minV = parseFloat(document.getElementById('minInput').value); if (val < minV) val = minV; }
+
+            if (val < minAttr) val = minAttr;
+            if (val > maxAttr) val = maxAttr;
+
+            if(config.id === 'mevcut') {
+                document.getElementById('siraSlider').max = val;
+                let sInput = document.getElementById('siraInput');
+                if (parseInt(sInput.value) > val) { sInput.value = val; document.getElementById('siraSlider').value = val; }
+            }
+
+            this.value = config.isInt ? Math.round(val).toString() : val.toFixed(2);
+            this.dataset.lastValid = this.value;
+            slider.value = this.value;
+            handleInputChanged();
+        });
+
+        numInput.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                let step = config.id === 'ort' ? 0.01 : 1;
+                let val = parseFloat(this.value) || 0;
+                let maxAttr = parseFloat(this.max);
+                let minAttr = parseFloat(this.min);
+
+                if (e.key === 'ArrowUp') val += step;
+                if (e.key === 'ArrowDown') val -= step;
+
+                if (!config.isInt) val = Math.round(val * 100) / 100;
+                else val = Math.round(val);
+
+                if (config.id === 'mevcut') { if (val < 10) val = 10; if (val > 29) val = 29; }
+                if (config.id === 'sira') { let nV = parseInt(document.getElementById('mevcutInput').value) || 21; if (val < 1) val = 1; if (val > nV) val = nV; }
+                if (config.id === 'min') { let maxV = parseFloat(document.getElementById('maxInput').value); if (val > maxV) val = maxV; } 
+                else if (config.id === 'max') { let minV = parseFloat(document.getElementById('minInput').value); if (val < minV) val = minV; }
+
+                if (val < minAttr) val = minAttr;
+                if (val > maxAttr) val = maxAttr;
+
+                if(config.id === 'mevcut') {
+                    document.getElementById('siraSlider').max = val;
+                    let sInput = document.getElementById('siraInput');
+                    if (parseInt(sInput.value) > val) { sInput.value = val; document.getElementById('siraSlider').value = val; }
+                }
+
+                this.value = config.isInt ? val.toString() : val.toFixed(2);
+                this.dataset.lastValid = this.value;
+                slider.value = this.value;
+                handleInputChanged();
+            }
+        });
+    });
+
+    handleInputChanged(); 
+</script>
+
+</body>
+</html>
